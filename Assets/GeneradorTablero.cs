@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public class GeneradorTablero : MonoBehaviour
 {
     // Esta variable nos permitirá conectar nuestro Prefab desde Unity
@@ -44,3 +45,5 @@ public class GeneradorTablero : MonoBehaviour
         Camera.main.transform.position = new Vector3(3.5f, 3.5f, -10f);
     }
 }
+
+//estamos activos 
