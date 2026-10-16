@@ -37,6 +37,18 @@ public class GeneradorTablero : MonoBehaviour
     private bool juegoTerminado = false;
     private string mensajePantalla = "";
 
+    public bool EsTurnoBlancas => turnoBlancas;
+    public bool JuegoTerminado => juegoTerminado;
+    public string MensajePantalla => mensajePantalla;
+
+    void Awake()
+    {
+        if (FindFirstObjectByType<MenuPrincipal>() == null)
+        {
+            gameObject.AddComponent<MenuPrincipal>();
+        }
+    }
+
     void Start()
     {
         GenerarCuadricula();
@@ -45,11 +57,18 @@ public class GeneradorTablero : MonoBehaviour
 
     void Update()
     {
+        // Si el menú está abierto, bloqueamos la interacción con el tablero
+        if (MenuPrincipal.Instance != null && MenuPrincipal.Instance.EstaMenuAbierto())
+            return;
+
         // Si el juego terminó, bloqueamos todos los clics en el tablero
         if (juegoTerminado) return;
 
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
+            if (MenuPrincipal.Instance != null && MenuPrincipal.Instance.EsClicEnHUD(Mouse.current.position.ReadValue()))
+                return;
+
             DetectarClic();
         }
     }
@@ -345,32 +364,83 @@ public class GeneradorTablero : MonoBehaviour
         pieza.Posicionar(nuevoX, nuevoY);
     }
 
+    public void CambiarTema(Color nuevoColorClaro, Color nuevoColorOscuro)
+    {
+        colorClaro = nuevoColorClaro;
+        colorOscuro = nuevoColorOscuro;
+        ActualizarColoresTablero();
+    }
+
+    public void ReiniciarTablero()
+    {
+        // 1. Destruir todas las piezas existentes
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                if (matrizPiezas[x, y] != null)
+                {
+                    Destroy(matrizPiezas[x, y].gameObject);
+                    matrizPiezas[x, y] = null;
+                }
+            }
+        }
+
+        // 2. Restaurar estado de juego
+        piezaSeleccionada = null;
+        turnoBlancas = true;
+        juegoTerminado = false;
+        mensajePantalla = "";
+
+        // 3. Volver a colocar piezas y refrescar colores
+        ColocarPiezasIniciales();
+        ActualizarColoresTablero();
+    }
+
     // Dibuja el cartel de advertencia de Jaque y el cartel de Fin de Juego sin tener que crear UI manual
     void OnGUI()
     {
+        // Si el menú principal, pausa u opciones están abiertos, no dibujamos encima
+        if (MenuPrincipal.Instance != null && MenuPrincipal.Instance.EstaMenuAbierto())
+            return;
+
         if (!string.IsNullOrEmpty(mensajePantalla))
         {
             GUIStyle estiloBanner = new GUIStyle(GUI.skin.box);
-            estiloBanner.fontSize = 22;
+            estiloBanner.fontSize = 20;
             estiloBanner.fontStyle = FontStyle.Bold;
             estiloBanner.alignment = TextAnchor.MiddleCenter;
-            estiloBanner.normal.textColor = Color.white;
+            estiloBanner.normal.textColor = new Color(0.831f, 0.686f, 0.216f); // #D4AF37 Dorado
 
-            // Caja superior con la advertencia
-            GUI.backgroundColor = juegoTerminado ? new Color(0.1f, 0.1f, 0.1f, 0.95f) : new Color(0.8f, 0.1f, 0.1f, 0.9f);
-            GUI.Box(new Rect(Screen.width / 2 - 280, 15, 560, 50), mensajePantalla, estiloBanner);
+            // Caja superior con fondo #0A0A0A
+            GUI.backgroundColor = new Color(0.039f, 0.039f, 0.039f, 0.96f);
+            GUI.Box(new Rect(Screen.width / 2 - 280, 15, 560, 50), mensajePantalla.ToUpperInvariant(), estiloBanner);
 
-            // Si terminó la partida, mostramos el botón para jugar de nuevo
+            // Si terminó la partida, mostramos botones minimalistas
             if (juegoTerminado)
             {
                 GUIStyle estiloBoton = new GUIStyle(GUI.skin.button);
-                estiloBoton.fontSize = 20;
+                estiloBoton.fontSize = 15;
                 estiloBoton.fontStyle = FontStyle.Bold;
+                estiloBoton.alignment = TextAnchor.MiddleCenter;
+                estiloBoton.normal.textColor = new Color(0.831f, 0.686f, 0.216f); // #D4AF37
 
-                GUI.backgroundColor = new Color(0.2f, 0.6f, 0.9f, 1f);
-                if (GUI.Button(new Rect(Screen.width / 2 - 120, 75, 240, 45), "Jugar de Nuevo", estiloBoton))
+                GUI.backgroundColor = new Color(0.078f, 0.078f, 0.078f, 0.98f); // #141414
+                if (GUI.Button(new Rect(Screen.width / 2 - 245, 75, 230, 46), "J U G A R   D E   N U E V O", estiloBoton))
                 {
-                    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                    ReiniciarTablero();
+                }
+
+                if (GUI.Button(new Rect(Screen.width / 2 + 15, 75, 230, 46), "M E N Ú   P R I N C I P A L", estiloBoton))
+                {
+                    if (MenuPrincipal.Instance != null)
+                    {
+                        MenuPrincipal.Instance.VolverAlMenuPrincipal();
+                    }
+                    else
+                    {
+                        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                    }
                 }
             }
         }

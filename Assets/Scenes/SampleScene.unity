@@ -374,6 +374,7 @@ GameObject:
   m_Component:
   - component: {fileID: 912317496}
   - component: {fileID: 912317497}
+  - component: {fileID: 912317498}
   m_Layer: 0
   m_Name: tableroManager
   m_TagString: Respawn
@@ -424,6 +425,23 @@ MonoBehaviour:
   alfilAzul: {fileID: 4722002057401713129, guid: 8c1727e71bc410a4ea144bfa971feed2, type: 3}
   reinaAzul: {fileID: 382484391580876170, guid: 72c1f9579c4c11d40b3b7a6cc47c249a, type: 3}
   reyAzul: {fileID: 6138451663560281698, guid: 79c122b2fd3c236469eda7aa49f93a6d, type: 3}
+--- !u!114 &912317498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912317495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff71461c5e1c4f159ad169192b338e13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuPrincipal
+  generadorTablero: {fileID: 912317497}
+  estadoActual: 0
+  volumenGeneral: 0.8
+  pantallaCompleta: 1
+  temaSeleccionado: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
