@@ -65,6 +65,13 @@ public class MenuPrincipal : MonoBehaviour
     public Text textoTurnoHUD;
     public TextMeshProUGUI textoTurnoTMP;
 
+    [Header("UI En Partida (HUD y Fin de Juego)")]
+    public GameObject badgeAvisoJaque;
+    public Text textoAvisoJaque;
+    public GameObject panelFinPartida;
+    public Text textoTituloFinPartida;
+    public Text textoSubtituloFinPartida;
+
     // Control de animaciones OnGUI
     private Dictionary<string, float> animacionesHover = new Dictionary<string, float>();
     private Texture2D texFondoNegro;
@@ -407,15 +414,23 @@ public class MenuPrincipal : MonoBehaviour
         rtHUD.offsetMin = Vector2.zero;
         rtHUD.offsetMax = Vector2.zero;
 
-        // Botón Menú superior derecho
-        GameObject btnHUDObj = CrearBotonCanvas(panelHUD.transform, "M  E  N  Ú", Vector2.zero, 130, 40, spriteBoton, AlternarPausa);
-        RectTransform rtBtn = btnHUDObj.GetComponent<RectTransform>();
-        rtBtn.anchorMin = new Vector2(1, 1);
-        rtBtn.anchorMax = new Vector2(1, 1);
-        rtBtn.pivot = new Vector2(1, 1);
-        rtBtn.anchoredPosition = new Vector2(-25, -20);
+        // Botón Pausa superior derecho
+        GameObject btnPausaObj = CrearBotonCanvas(panelHUD.transform, "P  A  U  S  A", Vector2.zero, 110, 38, spriteBoton, AlternarPausa);
+        RectTransform rtBtnPausa = btnPausaObj.GetComponent<RectTransform>();
+        rtBtnPausa.anchorMin = new Vector2(1, 1);
+        rtBtnPausa.anchorMax = new Vector2(1, 1);
+        rtBtnPausa.pivot = new Vector2(1, 1);
+        rtBtnPausa.anchoredPosition = new Vector2(-25, -20);
 
-        // Badge Turno superior izquierdo
+        // Botón Reiniciar superior derecho (al lado de Pausa)
+        GameObject btnReiniciarObj = CrearBotonCanvas(panelHUD.transform, "R  E  I  N  I  C  I  A  R", Vector2.zero, 130, 38, spriteBoton, ReiniciarPartida);
+        RectTransform rtBtnReiniciar = btnReiniciarObj.GetComponent<RectTransform>();
+        rtBtnReiniciar.anchorMin = new Vector2(1, 1);
+        rtBtnReiniciar.anchorMax = new Vector2(1, 1);
+        rtBtnReiniciar.pivot = new Vector2(1, 1);
+        rtBtnReiniciar.anchoredPosition = new Vector2(-145, -20);
+
+        // Badge Turno superior izquierdo (con raycastTarget = false para no bloquear clics)
         GameObject badgeTurno = new GameObject("BadgeTurno");
         badgeTurno.transform.SetParent(panelHUD.transform, false);
         RectTransform rtBadge = badgeTurno.AddComponent<RectTransform>();
@@ -423,14 +438,51 @@ public class MenuPrincipal : MonoBehaviour
         rtBadge.anchorMax = new Vector2(0, 1);
         rtBadge.pivot = new Vector2(0, 1);
         rtBadge.anchoredPosition = new Vector2(25, -20);
-        rtBadge.sizeDelta = new Vector2(220, 40);
+        rtBadge.sizeDelta = new Vector2(230, 38);
 
         Image imgBadge = badgeTurno.AddComponent<Image>();
         imgBadge.color = ColorSuperficieCard;
         imgBadge.sprite = spriteCard;
         imgBadge.type = Image.Type.Sliced;
+        imgBadge.raycastTarget = false;
 
         textoTurnoHUD = CrearTexto(badgeTurno.transform, "T U R N O :   B L A N C A S", 13, ColorDorado, Vector2.zero);
+        textoTurnoHUD.raycastTarget = false;
+
+        // Badge Aviso Jaque superior central (con raycastTarget = false para NUNCA bloquear piezas debajo)
+        badgeAvisoJaque = new GameObject("BadgeAvisoJaque");
+        badgeAvisoJaque.transform.SetParent(panelHUD.transform, false);
+        RectTransform rtJaque = badgeAvisoJaque.AddComponent<RectTransform>();
+        rtJaque.anchorMin = new Vector2(0.5f, 1);
+        rtJaque.anchorMax = new Vector2(0.5f, 1);
+        rtJaque.pivot = new Vector2(0.5f, 1);
+        rtJaque.anchoredPosition = new Vector2(0, -20);
+        rtJaque.sizeDelta = new Vector2(380, 38);
+
+        Image imgJaque = badgeAvisoJaque.AddComponent<Image>();
+        imgJaque.color = new Color(0.14f, 0.05f, 0.05f, 0.95f); // Fondo rojizo muy sutil sobre negro
+        imgJaque.sprite = spriteCard;
+        imgJaque.type = Image.Type.Sliced;
+        imgJaque.raycastTarget = false;
+
+        textoAvisoJaque = CrearTexto(badgeAvisoJaque.transform, "¡ J A Q U E   A L   R E Y !", 13, new Color(1f, 0.35f, 0.35f), Vector2.zero);
+        textoAvisoJaque.raycastTarget = false;
+        badgeAvisoJaque.SetActive(false);
+
+        // --- 5. PANEL CENTRAL FIN DE PARTIDA ---
+        panelFinPartida = CrearPanelFondo(canvasObj.transform, "PanelFinPartida");
+        // Asegurar que quede por encima de todo en la jerarquía del Canvas
+        panelFinPartida.transform.SetAsLastSibling();
+        GameObject cardFin = CrearCard(panelFinPartida.transform, "CardFinPartida", 540, 380, spriteCard);
+
+        textoTituloFinPartida = CrearTexto(cardFin.transform, "¡ V I C T O R I A !", 34, ColorDorado, new Vector2(0, 115));
+        textoSubtituloFinPartida = CrearTexto(cardFin.transform, "E L   R E Y   H A   S I D O   C A P T U R A D O", 15, ColorDoradoMetalico, new Vector2(0, 70));
+        CrearLineaDivisoria(cardFin.transform, new Vector2(0, 40), 380, 1);
+
+        CrearBotonCanvas(cardFin.transform, "J  U  G  A  R     D  E     N  U  E  V  O", new Vector2(0, -30), 400, 54, spriteBoton, ReiniciarPartida);
+        CrearBotonCanvas(cardFin.transform, "S  A  L  I  R     A  L     M  E  N  Ú", new Vector2(0, -98), 400, 48, spriteBoton, VolverAlMenuPrincipal);
+
+        panelFinPartida.SetActive(false);
 
         ActualizarPanelesCanvas();
     }
@@ -491,6 +543,7 @@ public class MenuPrincipal : MonoBehaviour
         t.fontStyle = FontStyle.Bold;
         t.color = color;
         t.alignment = TextAnchor.MiddleCenter;
+        t.verticalOverflow = VerticalWrapMode.Overflow;
         t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf") ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
         return t;
     }
@@ -540,6 +593,43 @@ public class MenuPrincipal : MonoBehaviour
         if (panelOpciones != null) panelOpciones.SetActive(estadoActual == EstadoMenu.Opciones);
         if (panelPausa != null) panelPausa.SetActive(estadoActual == EstadoMenu.Pausa);
         if (panelHUD != null) panelHUD.SetActive(estadoActual == EstadoMenu.EnPartida);
+
+        // Si salimos de la partida, ocultamos el cartel de fin de juego y aviso de jaque
+        if (estadoActual != EstadoMenu.EnPartida)
+        {
+            OcultarFinDePartida();
+            ActualizarAvisoJaque("", false);
+        }
+    }
+
+    public void MostrarFinDePartida(string titulo, string subtitulo)
+    {
+        if (panelFinPartida != null)
+        {
+            panelFinPartida.SetActive(true);
+            if (textoTituloFinPartida != null) textoTituloFinPartida.text = titulo;
+            if (textoSubtituloFinPartida != null) textoSubtituloFinPartida.text = subtitulo;
+        }
+    }
+
+    public void OcultarFinDePartida()
+    {
+        if (panelFinPartida != null)
+        {
+            panelFinPartida.SetActive(false);
+        }
+    }
+
+    public void ActualizarAvisoJaque(string mensaje, bool activo)
+    {
+        if (badgeAvisoJaque != null)
+        {
+            badgeAvisoJaque.SetActive(activo);
+            if (textoAvisoJaque != null && activo)
+            {
+                textoAvisoJaque.text = mensaje;
+            }
+        }
     }
 
     private void ActualizarTurnoCanvas()
